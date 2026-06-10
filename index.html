@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>skillTree</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-dark:        #13141f;
+      --bg-card:        #1e2030;
+      --bg-card-hover:  #252840;
+      --border-teal:    rgba(32, 200, 150, 0.55);
+      --border-subtle:  rgba(80, 80, 110, 0.5);
+      --glow-teal:      rgba(32, 200, 150, 0.18);
+      --glow-gold:      rgba(255, 210, 50, 0.18);
+      --text-primary:   #f0f0ff;
+      --text-secondary: #9090b0;
+      --text-teal:      #33e8a8;
+      --text-gold:      #ffd700;
+      --accent-teal:    #20c896;
+      --accent-gold:    #ffd700;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Subtle animated background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(32,200,150,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(255,215,0,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(19, 20, 31, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 2rem;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .nav-logo span {
+      color: var(--text-teal);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.25rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      display: block;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text-teal);
+      background: var(--glow-teal);
+    }
+
+    /* ── PAGES ── */
+    .page {
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+    .page.active { display: block; }
+
+    /* ── HOME PAGE ── */
+    #home {
+      min-height: calc(100vh - 62px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--glow-teal);
+      border: 1px solid var(--border-teal);
+      color: var(--text-teal);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      margin-bottom: 1.6rem;
+    }
+
+    h1.hero-title {
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 1rem;
+    }
+
+    h1.hero-title .highlight {
+      color: var(--text-teal);
+    }
+
+    .hero-sub {
+      max-width: 620px;
+      color: var(--text-secondary);
+      font-size: clamp(0.92rem, 2.2vw, 1.05rem);
+      line-height: 1.75;
+      margin-bottom: 3rem;
+    }
+
+    /* ── COUNTDOWN ── */
+    .countdown-wrapper {
+      margin-bottom: 3rem;
+    }
+
+    .countdown-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 1.1rem;
+    }
+
+    .countdown {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .countdown-unit {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.1rem 1.4rem;
+      min-width: 82px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .countdown-unit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(32,200,150,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .countdown-unit:hover {
+      border-color: var(--border-teal);
+      box-shadow: 0 0 18px var(--glow-teal);
+    }
+
+    .countdown-num {
+      display: block;
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text-teal);
+      letter-spacing: -1px;
+      margin-bottom: 0.35rem;
+    }
+
+    .countdown-unit.gold .countdown-num { color: var(--text-gold); }
+    .countdown-unit.gold { border-color: rgba(255,215,0,0.25); }
+    .countdown-unit.gold:hover { border-color: rgba(255,215,0,0.55); box-shadow: 0 0 18px var(--glow-gold); }
+
+    .countdown-lbl {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+      border-radius: 2px;
+      margin: 0 auto 3rem;
+    }
+
+    /* ── PLATFORMS ROW ── */
+    .platforms {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .platform-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 50px;
+      padding: 0.5rem 1.15rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .platform-pill:hover {
+      border-color: var(--border-teal);
+      color: var(--text-teal);
+      box-shadow: 0 0 12px var(--glow-teal);
+    }
+
+    .platform-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      flex-shrink: 0;
+    }
+
+    /* ── ABOUT PAGE ── */
+    #about {
+      min-height: calc(100vh - 62px);
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 5rem 1.5rem 4rem;
+    }
+
+    .about-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .about-header .badge { margin-bottom: 1rem; }
+
+    .about-header h2 {
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.75px;
+      line-height: 1.2;
+    }
+
+    .about-header h2 span { color: var(--text-teal); }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 2rem 2.2rem;
+      margin-bottom: 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--border-teal);
+      box-shadow: 0 4px 30px var(--glow-teal);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-teal);
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.2px;
+    }
+
+    .card p,
+    .mission-text {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      font-size: 0.97rem;
+    }
+
+    .mission-placeholder {
+      color: rgba(144,144,176,0.45);
+      font-style: italic;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border-subtle);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      letter-spacing: 0.3px;
+    }
+
+    footer span { color: var(--text-teal); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 520px) {
+      nav { padding: 0 1rem; }
+      .countdown-unit { min-width: 68px; padding: 0.9rem 1rem; }
+      .countdown-num { font-size: 1.9rem; }
+      .card { padding: 1.4rem 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">skill<span>Tree</span></div>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+      <li><a href="#" onclick="showPage('about')" id="nav-about">About</a></li>
+    </ul>
+  </nav>
+
+  <!-- ════════ HOME PAGE ════════ -->
+  <div id="home" class="page active">
+
+    <div class="badge">🚀 &nbsp;Launching August 2025</div>
+
+    <h1 class="hero-title">Coming <span class="highlight">soon..</span></h1>
+
+    <p class="hero-sub">
+      skillTree is a cross-platform app &amp; website of the genre <em>'social media'</em> and <em>'productivity'</em>.
+      It is currently in end stage development and will be launched soon on all mobile and web platforms.
+      This website will be the host for the web version of the platform.
+      Please stay tuned!
+    </p>
+
+    <div class="countdown-wrapper">
+      <p class="countdown-label">Launch countdown</p>
+      <div class="countdown">
+        <div class="countdown-unit gold">
+          <span class="countdown-num" id="cd-days">--</span>
+          <span class="countdown-lbl">Days</span>
+        </div>
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cd-hours">--</span>
+          <span class="countdown-lbl">Hours</span>
+        </div>
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cd-mins">--</span>
+          <span class="countdown-lbl">Minutes</span>
+        </div>
+        <div class="countdown-unit">
+          <span class="countdown-num" id="cd-secs">--</span>
+          <span class="countdown-lbl">Seconds</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="platforms">
+      <div class="platform-pill"><span class="dot"></span>iOS</div>
+      <div class="platform-pill"><span class="dot"></span>Android</div>
+      <div class="platform-pill"><span class="dot"></span>Web</div>
+      <div class="platform-pill"><span class="dot"></span>Desktop</div>
+    </div>
+
+  </div>
+
+  <!-- ════════ ABOUT PAGE ════════ -->
+  <div id="about" class="page">
+
+    <div class="about-header">
+      <div class="badge">About skillTree</div>
+      <h2>Our <span>Mission</span></h2>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🌱</span>
+      <h3>Mission Statement</h3>
+      <p class="mission-text mission-placeholder">
+        [ Mission statement coming soon — check back shortly. ]
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">📱</span>
+      <h3>What is skillTree?</h3>
+      <p>
+        skillTree is a cross-platform social productivity app designed to help people build,
+        track, and share skills in a community-driven environment. Available on iOS, Android,
+        web, and desktop at launch.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">⚙️</span>
+      <h3>Status</h3>
+      <p>
+        skillTree is currently in end-stage development. The platform is undergoing final
+        testing and polish ahead of its public launch on <strong style="color:var(--text-teal)">1st August 2025</strong>.
+        This page will be updated with full content at launch.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    &copy; 2025 <span>skillTree</span> &nbsp;·&nbsp; All rights reserved &nbsp;·&nbsp; Launching 1 Aug 2025
+  </footer>
+
+  <script>
+    // ── PAGE NAVIGATION ──────────────────────────────────────────
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.getElementById('nav-' + id).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+
+    // ── COUNTDOWN ────────────────────────────────────────────────
+    const TARGET = new Date('2025-08-01T00:00:00');
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+      const now  = new Date();
+      const diff = TARGET - now;
+
+      if (diff <= 0) {
+        document.getElementById('cd-days').textContent  = '00';
+        document.getElementById('cd-hours').textContent = '00';
+        document.getElementById('cd-mins').textContent  = '00';
+        document.getElementById('cd-secs').textContent  = '00';
+        return;
+      }
+
+      const days  = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins  = Math.floor((diff % 3600000)  / 60000);
+      const secs  = Math.floor((diff % 60000)    / 1000);
+
+      document.getElementById('cd-days').textContent  = pad(days);
+      document.getElementById('cd-hours').textContent = pad(hours);
+      document.getElementById('cd-mins').textContent  = pad(mins);
+      document.getElementById('cd-secs').textContent  = pad(secs);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  </script>
+
+</body>
+</html>
